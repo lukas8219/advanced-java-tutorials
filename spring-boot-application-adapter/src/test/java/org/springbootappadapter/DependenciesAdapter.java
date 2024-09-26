@@ -1,8 +1,8 @@
 package org.springbootappadapter;
 
+import static org.burningwave.core.assembler.StaticComponentContainer.Driver;
 import static org.burningwave.core.assembler.StaticComponentContainer.JVMInfo;
-import static org.burningwave.core.assembler.StaticComponentContainer.ManagedLoggersRepository;
-import static org.burningwave.core.assembler.StaticComponentContainer.Throwables;
+import static org.burningwave.core.assembler.StaticComponentContainer.ManagedLoggerRepository;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,13 +26,17 @@ public class DependenciesAdapter {
 		if (JVMInfo.getVersion() > 8) {
 			String jdkHome = componentContainer.getConfigProperty("paths.jdk-home");
 			if (jdkHome == null || !FileSystemItem.ofPath(jdkHome).exists()) {
-				ManagedLoggersRepository.logError(
-					() -> DependenciesAdapter.class.getName(),
-					"\"{}\" is not a valid jdk home path: please provide a correct jdk home in the property 'paths.jdk-home' inside the file \"{}\"",
+				String errorMessage = "\"{}\" is not a valid jdk home path: please provide a correct jdk home in the property 'paths.jdk-home' inside the file \"{}\"";
+				Object[] errorMessageParams = new Object[] {
 					componentContainer.getConfigProperty("paths.jdk-home"),
-					pathHelper.getAbsolutePathOfResource("../../src/main/resources/burningwave.properties")
+					pathHelper.getAbsolutePathOfResource("../../../spring-boot-application-adapter/src/test/resources/burningwave.properties")
+				};
+				ManagedLoggerRepository.logError(
+					() -> DependenciesAdapter.class.getName(),
+					errorMessage, errorMessageParams
+					
 				);
-				Throwables.throwException("Unvalid jdk home path");
+				Driver.throwException(errorMessage, errorMessageParams);
 			}
 			paths.addAll(pathHelper.getPaths("dependencies-capturer.additional-resources-path"));
 		}
@@ -47,7 +51,7 @@ public class DependenciesAdapter {
 				0L
 		);
 		result.waitForTaskEnding();
-		ManagedLoggersRepository.logInfo(() -> DependenciesAdapter.class.getName(), "Elapsed time: " + getFormattedDifferenceOfMillis(System.currentTimeMillis(), initialTime));
+		ManagedLoggerRepository.logInfo(() -> DependenciesAdapter.class.getName(), "Elapsed time: " + getFormattedDifferenceOfMillis(System.currentTimeMillis(), initialTime));
 	}
 	
 	private static String getFormattedDifferenceOfMillis(long value1, long value2) {
